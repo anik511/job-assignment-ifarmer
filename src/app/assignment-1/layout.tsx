@@ -1,14 +1,17 @@
+import { ReduxProvider } from "@/store/ReduxProvider";
+
 export default function Assignment1Layout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-blue-50 dark:bg-gray-900">
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-6">
-        {children}
+    <ReduxProvider>
+      <div className="min-h-screen bg-blue-50 dark:bg-gray-900">
+        <div className="container mx-auto px-4 py-6">
+          {children}
+        </div>
       </div>
-    </div>
+    </ReduxProvider>
   );
 }

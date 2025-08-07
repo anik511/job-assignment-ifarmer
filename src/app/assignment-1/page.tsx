@@ -20,11 +20,11 @@ export default function Assignment1Page() {
           </p>
           
           {hasActiveGame && (
-            <div className="mt-3 p-3 bg-blue-50 rounded">
-              <p className="text-blue-700 font-medium text-sm">
+            <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900 rounded">
+              <p className="text-blue-700 dark:text-blue-300 font-medium text-sm">
                 Game in progress: {gameState.players.player1?.name} vs {gameState.players.player2?.name}
               </p>
-              <p className="text-xs text-blue-600">
+              <p className="text-xs text-blue-600 dark:text-blue-400">
                 Round {gameState.roundNumber} of {gameState.totalRounds}
               </p>
             </div>

@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-// Define navigation items for both assignments
 const navigationItems = [
   {
     id: "assignment-1",
@@ -13,10 +12,9 @@ const navigationItems = [
     icon: "🎮",
     description: "Tic-Tac-Toe Game",
     subItems: [
-      { label: "Player Setup", href: "/assignment-1/player-setup" },
-      { label: "Game", href: "/assignment-1/game" },
+      { label: "Start New Game", href: "/assignment-1/player-setup" },
+      { label: "Continue Game", href: "/assignment-1/game" },
       { label: "Leaderboard", href: "/assignment-1/leaderboard" },
-      { label: "Result", href: "/assignment-1/result" },
     ],
   },
   {
@@ -56,7 +54,7 @@ const GlobalNavbar = () => {
     setIsMenuOpen(false);
     setOpenSubmenu(null);
   };
-
+  
   return (
     <header className="bg-white dark:bg-gray-900 shadow-lg border-b-2 border-gradient-to-r from-blue-500 to-purple-500 sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">

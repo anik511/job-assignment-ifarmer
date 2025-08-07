@@ -52,12 +52,6 @@ export default function LeaderboardPage() {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Leaderboard
           </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            {isMatchComplete 
-              ? 'Final Match Results' 
-              : `Current Standings - Round ${roundNumber} of ${totalRounds}`
-            }
-          </p>
         </div>
         
         {sortedPlayers.length === 0 ? (
@@ -111,39 +105,6 @@ export default function LeaderboardPage() {
                 )}
               </div>
             ))}
-          </div>
-        )}
-        
-        {sortedPlayers.length > 0 && (
-          <div className="mt-8 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <h3 className="font-medium text-blue-800 dark:text-blue-200 mb-3">
-              Scoring System
-            </h3>
-            <div className="text-sm text-blue-600 dark:text-blue-300 space-y-1">
-              <div className="flex justify-between">
-                <span>Win a round:</span>
-                <span className="font-medium">+2 points</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Draw a round:</span>
-                <span className="font-medium">+1 point each</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Lose a round:</span>
-                <span className="font-medium">+0 points</span>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {isMatchComplete && sortedPlayers.length > 0 && (
-          <div className="mt-6 text-center">
-            <div className="inline-flex items-center space-x-2 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 px-4 py-2 rounded-lg">
-              <span className="text-lg">🎉</span>
-              <span className="font-medium">
-                Match Complete! {sortedPlayers[0].name} wins with {sortedPlayers[0].score} points!
-              </span>
-            </div>
           </div>
         )}
       </div>

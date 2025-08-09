@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { Product, sampleProducts } from '@/types/product'
 import { ProductCard, CategorySidebar, Pagination, LoadingSpinner } from '@/components/assignment-2'
 import InputField from '@/components/shared/InputField'
+import Swal from 'sweetalert2'
 
 // Platzi API Response interface
 interface PlatziProduct {
@@ -37,12 +38,16 @@ export default function ProductsPage() {
 
   // Fetch products from Platzi API
   useEffect(() => {
+    let isMounted = true
+    
     const fetchProducts = async () => {
       try {
-        setLoading(true)
+        if (isMounted) {
+          setLoading(true)
+        }
         
         // Platzi Fake Store API
-        const API_URL = 'https://api.escuelajs.co/api/v1/products?limit=30'
+        const API_URL = 'https://api.escuelajs.co/api/v1/products'
         
         const response = await fetch(API_URL)
         if (!response.ok) {
@@ -51,40 +56,41 @@ export default function ProductsPage() {
         
         const data: PlatziProduct[] = await response.json()
         
-        // Transform Platzi API data to match our Product interface
-        const transformedProducts: Product[] = data.map((item: PlatziProduct) => ({
-          id: item.id.toString(),
-          name: item.title,
-          description: item.description,
-          price: item.price,
-          category: item.category.name,
-          imageUrl: item.images[0] || 'https://via.placeholder.com/300x200?text=No+Image',
-          inStock: true, // Platzi API doesn't have stock info, assume all in stock
-          createdAt: new Date(item.creationAt),
-          updatedAt: new Date(item.updatedAt)
-        }))
-        
-        setProducts(transformedProducts)
-        // Cache in localStorage
-        localStorage.setItem('products', JSON.stringify(transformedProducts))
+        // Only update state if component is still mounted
+        if (isMounted) {
+          // Transform Platzi API data to match our Product interface
+          const transformedProducts: Product[] = data.map((item: PlatziProduct) => ({
+            id: item.id.toString(),
+            name: item.title,
+            description: item.description,
+            price: item.price,
+            category: item.category.name,
+            imageUrl: item.images[0] || 'https://via.placeholder.com/300x200?text=No+Image',
+            inStock: true, // Platzi API doesn't have stock info, assume all in stock
+            createdAt: new Date(item.creationAt),
+            updatedAt: new Date(item.updatedAt)
+          }))
+          
+          setProducts(transformedProducts)
+        }
         
       } catch (error) {
         console.error('Error fetching products:', error)
-        
-        // Fallback to localStorage or sample data
-        const savedProducts = localStorage.getItem('products')
-        if (savedProducts) {
-          setProducts(JSON.parse(savedProducts))
-        } else {
+        if (isMounted) {
           setProducts(sampleProducts)
-          localStorage.setItem('products', JSON.stringify(sampleProducts))
         }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
 
     fetchProducts()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   // Filter products based on search and category
@@ -117,11 +123,56 @@ export default function ProductsPage() {
     return counts
   }, [products])
 
-  // Delete product function
-  const handleDeleteProduct = (id: string) => {
-    const updatedProducts = products.filter(p => p.id !== id)
-    setProducts(updatedProducts)
-    localStorage.setItem('products', JSON.stringify(updatedProducts))
+  // Delete product function with API call and SweetAlert2
+  const handleDeleteProduct = async (id: string) => {
+    try {
+      // Show confirmation dialog
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+      })
+
+      if (result.isConfirmed) {
+        // Call the Platzi API to delete the product
+        const API_URL = `https://api.escuelajs.co/api/v1/products/${id}`
+        
+        const response = await fetch(API_URL, {
+          method: 'DELETE'
+        })
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        
+        // Remove from local state (optimistic update)
+        const updatedProducts = products.filter(p => p.id !== id)
+        setProducts(updatedProducts)
+        
+        // Show success message
+        await Swal.fire({
+          title: 'Deleted!',
+          text: 'Your product has been deleted.',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        })
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error)
+      
+      // Show error message
+      await Swal.fire({
+        title: 'Error!',
+        text: 'Failed to delete product. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      })
+    }
   }
 
   if (loading) {
@@ -139,17 +190,17 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">
             Products
           </h1>
           
           {/* Search Bar */}
-          <div className="max-w-md">
+          <div className="max-w-full sm:max-w-md">
             <InputField
-              placeholder="Search products by name or description..."
+              placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full"
@@ -157,21 +208,23 @@ export default function ProductsPage() {
           </div>
         </div>
 
-        <div className="flex gap-8">
-          {/* Left Sidebar - Categories */}
-          <div className="w-64 flex-shrink-0">
-            <CategorySidebar
-              selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
-              productCounts={categoryCount}
-            />
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          {/* Categories - Mobile & Desktop */}
+          <div className="lg:w-64 lg:flex-shrink-0">
+            <div className="lg:sticky lg:top-4">
+              <CategorySidebar
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+                productCounts={categoryCount}
+              />
+            </div>
           </div>
 
           {/* Main Content */}
           <div className="flex-1">
             {/* Results Info */}
-            <div className="mb-6">
-              <p className="text-gray-600 dark:text-gray-300">
+            <div className="mb-4 sm:mb-6">
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
                 Showing {paginatedProducts.length} of {filteredProducts.length} products
                 {searchTerm && (
                   <span> for &ldquo;{searchTerm}&rdquo;</span>
@@ -184,12 +237,12 @@ export default function ProductsPage() {
 
             {/* Products Grid */}
             {filteredProducts.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">📦</div>
-                <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
+              <div className="text-center py-8 sm:py-12">
+                <div className="text-4xl sm:text-6xl mb-4">📦</div>
+                <h3 className="text-lg sm:text-xl font-medium text-gray-900 dark:text-white mb-2">
                   No products found
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-6">
                   {searchTerm || selectedCategory 
                     ? "Try adjusting your search or filter criteria"
                     : "No products available at the moment"}
@@ -197,7 +250,7 @@ export default function ProductsPage() {
               </div>
             ) : (
               <>
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+                <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 mb-6 sm:mb-8">
                   {paginatedProducts.map(product => (
                     <ProductCard
                       key={product.id}
@@ -212,7 +265,7 @@ export default function ProductsPage() {
                   currentPage={currentPage}
                   totalPages={totalPages}
                   onPageChange={setCurrentPage}
-                  className="mt-8"
+                  className="mt-6 sm:mt-8"
                 />
               </>
             )}

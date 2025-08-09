@@ -5,7 +5,6 @@ export interface Product {
   price: number
   category: string
   imageUrl?: string
-  inStock: boolean
   createdAt: Date
   updatedAt: Date
 }
@@ -16,7 +15,6 @@ export interface ProductFormData {
   price: string // string for form input, converted to number
   category: string
   imageUrl: string
-  inStock: boolean
 }
 
 export interface ProductFilters {
@@ -41,7 +39,6 @@ export const emptyProduct: ProductFormData = {
   price: '',
   category: '',
   imageUrl: '',
-  inStock: true
 }
 
 // Sample products for initial data (using Platzi categories)
@@ -53,7 +50,6 @@ export const sampleProducts: Product[] = [
     price: 99.99,
     category: 'Electronics',
     imageUrl: 'https://via.placeholder.com/300x200?text=Headphones',
-    inStock: true,
     createdAt: new Date('2024-01-15'),
     updatedAt: new Date('2024-01-15')
   },
@@ -64,7 +60,6 @@ export const sampleProducts: Product[] = [
     price: 19.99,
     category: 'Clothes',
     imageUrl: 'https://via.placeholder.com/300x200?text=T-Shirt',
-    inStock: true,
     createdAt: new Date('2024-01-16'),
     updatedAt: new Date('2024-01-16')
   },
@@ -75,7 +70,6 @@ export const sampleProducts: Product[] = [
     price: 79.99,
     category: 'Shoes',
     imageUrl: 'https://via.placeholder.com/300x200?text=Shoes',
-    inStock: false,
     createdAt: new Date('2024-01-17'),
     updatedAt: new Date('2024-01-17')
   }
